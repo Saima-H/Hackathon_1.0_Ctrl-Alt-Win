@@ -100,9 +100,23 @@ export default function Page() {
       const finalOffice = office?.name || assignedGhmcOffice;
       const finalZone = zone || office?.zone || "";
       const finalLocality = locality || office?.locality || "";
-      const result=signup
-        ? await supabase.auth.signUp({email,password,options:{data:{full_name:name,role:role === "ghmc" ? "ghmc_staff" : "citizen",department_name:department,locality:finalLocality,address,latitude: finalLatitude,longitude: finalLongitude,zone:finalZone,assigned_ghmc_office:finalOffice}}})
-        : await supabase.auth.signInWithPassword({email,password});
+      if (signup) {
+        const signupResponse = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            password,
+            data: { full_name:name, role:role === "ghmc" ? "ghmc_staff" : "citizen", department_name:department, locality:finalLocality, address, latitude: finalLatitude, longitude: finalLongitude, zone:finalZone, assigned_ghmc_office:finalOffice },
+          }),
+        });
+        if (!signupResponse.ok) {
+          const signupResult = await signupResponse.json().catch(() => ({}));
+          setMessage(signupResult.error || "Could not create your account. Please try again.");
+          return;
+        }
+      }
+      const result = await supabase.auth.signInWithPassword({email,password});
       if (result.error) {
         setMessage(result.error.message);
         return;

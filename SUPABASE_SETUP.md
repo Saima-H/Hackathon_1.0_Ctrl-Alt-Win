@@ -48,4 +48,15 @@ The migration also creates the private `ticket-media` Storage bucket.
 
 Enable **Email** under **Authentication → Providers**. The UI includes one common login/signup page at `/login` with citizen and GHMC portal selection.
 
+### Production email confirmation
+
+For the deployed app at `https://saimahackathondep.vercel.app`, open **Authentication → URL Configuration** in Supabase and set:
+
+- **Site URL:** `https://saimahackathondep.vercel.app`
+- **Redirect URLs:** `https://saimahackathondep.vercel.app/login` (and `http://localhost:3000/login` only for local development)
+
+This prevents confirmation links from opening `localhost`. The app also supplies its current `/login` URL as the confirmation redirect when a user signs up.
+
+Supabase's built-in email sender is intentionally rate-limited. For a public deployment, configure a transactional SMTP provider in **Project Settings → Auth → SMTP Settings** (for example Resend, Postmark, or SendGrid), using a verified sending domain. Until SMTP is configured, wait for the quota window to reset before requesting another confirmation email; repeatedly retrying only extends the outage for testers.
+
 Before production launch, create staff accounts manually and set their `profiles.role` to `ghmc_staff` or `admin`. Keep GHMC assignment, escalation and publishing mutations server-side with the service-role key or add staff JWT claim policies.
